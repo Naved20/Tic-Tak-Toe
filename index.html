@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tic Tac Toe vs Computer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: #333;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        
+        h1 {
+            color: #6e48aa;
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 2.2rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #4a5568;
+            height: 2rem;
+            padding: 5px 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .status.your-turn {
+            color: #2d3748;
+            background-color: #e6fffa;
+            border-left: 5px solid #38b2ac;
+        }
+        
+        .status.computer-turn {
+            color: #2d3748;
+            background-color: #ebf4ff;
+            border-left: 5px solid #3182ce;
+        }
+        
+        .status.win {
+            color: #276749;
+            background-color: #c6f6d5;
+            border-left: 5px solid #38a169;
+        }
+        
+        .status.lose {
+            color: #742a2a;
+            background-color: #fed7d7;
+            border-left: 5px solid #e53e3e;
+        }
+        
+        .status.draw {
+            color: #744210;
+            background-color: #fefcbf;
+            border-left: 5px solid #d69e2e;
+        }
+        
+        .settings-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .difficulty-selector, .player-selector {
+            margin-bottom: 10px;
+        }
+        
+        select {
+            padding: 10px 15px;
+            font-size: 1rem;
+            border-radius: 10px;
+            border: 2px solid #a0aec0;
+            background-color: white;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        select:hover, select:focus {
+            border-color: #6e48aa;
+        }
+        
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            margin: 0 auto 25px;
+            width: 100%;
+            max-width: 350px;
+            aspect-ratio: 1/1;
+        }
+        
+        .cell {
+            background-color: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cell:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .cell.x-marker {
+            color: #e53e3e;
+        }
+        
+        .cell.o-marker {
+            color: #3182ce;
+        }
+        
+        .cell.highlight {
+            background-color: #c6f6d5;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(56, 161, 105, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(56, 161, 105, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(56, 161, 105, 0);
+            }
+        }
+        
+        @keyframes appear {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            70% {
+                transform: scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .cell.x-marker::before,
+        .cell.x-marker::after,
+        .cell.o-marker::before {
+            animation: appear 0.3s forwards;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .button {
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .reset-button {
+            background: linear-gradient(135deg, #6e48aa, #9d50bb);
+        }
+        
+        .undo-button {
+            background: linear-gradient(135deg, #3182ce, #4299e1);
+        }
+        
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .button:active {
+            transform: translateY(-1px);
+        }
+        
+        .button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        
+        /* Loading spinner for computer's turn */
+        .thinking {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            border: 3px solid rgba(49, 130, 206, 0.3);
+            border-radius: 50%;
+            border-top-color: #3182ce;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tic Tac Toe</h1>
+        <div class="status your-turn" id="status">Your turn (X)</div>
+        
+        <div class="settings-panel">
+            <div class="difficulty-selector">
+                <label for="difficulty">Difficulty:</label>
+                <select id="difficulty" onchange="resetGame()">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                    <option value="impossible">Impossible</option>
+                </select>
+            </div>
+            
+            <div class="player-selector">
+                <label for="start-player">First Player: </label>
+                <select id="start-player" onchange="resetGame()">
+                    <option value="human" selected>You</option>
+                    <option value="computer">Computer</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        
+        <div class="button-group">
+            <button class="button reset-button" id="reset-button">New Game</button>
+            <button class="button undo-button" id="undo-button" disabled>Undo Move</button>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="wins">0</div>
+                <div class="stat-label">Wins</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="draws">0</div>
+                <div class="stat-label">Draws</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="losses">0</div>
+                <div class="stat-label">Losses</div>
+            </div>
+        </div>
+        
+        <div class="footer" id="footer">You (X) vs Computer (O)</div>
+    </div>
+
+    <script>
+        // Game state
+        let gameBoard = ['', '', '', '', '', '', '', '', ''];
+        let gameActive = true;
+        let humanPlayer = 'X';
+        let computerPlayer = 'O';
+        let currentPlayer = humanPlayer;
+        let moveHistory = [];
+        let stats = {
+            wins: 0,
+            draws: 0,
+            losses: 0
+        };
+
+        // Winning combinations
+        const winningCombinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6]             // Diagonals
+        ];
+
+        // DOM elements
+        const statusDisplay = document.getElementById('status');
+        const cells = document.querySelectorAll('.cell');
+        const difficultySelector = document.getElementById('difficulty');
+        const startPlayerSelector = document.getElementById('start-player');
+        const resetButton = document.getElementById('reset-button');
+        const undoButton = document.getElementById('undo-button');
+        const winsDisplay = document.getElementById('wins');
+        const drawsDisplay = document.getElementById('draws');
+        const lossesDisplay = document.getElementById('losses');
+        const footerDisplay = document.getElementById('footer');
+
+        // Event listeners
+        resetButton.addEventListener('click', resetGame);
+        undoButton.addEventListener('click', undoMove);
+        cells.forEach(cell => {
+            cell.addEventListener('click', () => {
+                const index = parseInt(cell.getAttribute('data-index'));
+                makeMove(index);
+            });
+        });
+
+        // Initialize game
+        function initGame() {
+            gameBoard = ['', '', '', '', '', '', '', '', ''];
+            gameActive = true;
+            moveHistory = [];
+            
+            // Determine starting player
+            const startPlayer = startPlayerSelector.value;
+            currentPlayer = startPlayer === 'human' ? humanPlayer : computerPlayer;
+            
+            // Update status display
+            if (currentPlayer === humanPlayer) {
+                updateStatusDisplay('your-turn', 'Your turn (X)');
+            } else {
+                updateStatusDisplay('computer-turn', 'Computer\'s turn (O)');
+            }
+            
+            // Clear the board
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.className = 'cell';
+            });
+            
+            // Update undo button state
+            updateUndoButtonState();
+            
+            // Make computer move if computer goes first
+            if (currentPlayer === computerPlayer) {
+                computerMove();
+            }
+        }
+
+        // Update status display with appropriate style
+        function updateStatusDisplay(className, message) {
+            statusDisplay.className = 'status ' + className;
+            
+            // Add thinking spinner if computer's turn
+            if (className === 'computer-turn') {
+                statusDisplay.innerHTML = message + ' <span class="thinking"></span>';
+            } else {
+                statusDisplay.textContent = message;
+            }
+        }
+
+        // Handle player move
+        function makeMove(cellIndex) {
+            // Check if the cell is already filled or game is over
+            if (gameBoard[cellIndex] !== '' || !gameActive || currentPlayer !== humanPlayer) {
+                return;
+            }
+
+            // Save the current state for undo
+            saveGameState();
+            
+            // Update the game board with human move
+            updateCell(cellIndex, humanPlayer);
+
+            // Check for win or draw
+            if (checkGameStatus()) {
+                return;
+            }
+
+            // Computer's turn
+            currentPlayer = computerPlayer;
+            updateStatusDisplay('computer-turn', 'Computer thinking...');
+            
+            // Disable board during computer's turn
+            toggleBoardClickable(false);
+            
+            // Delay computer move for better UX
+            setTimeout(() => {
+                // Save state before computer move for undo
+                saveGameState();
+                
+                computerMove();
+                checkGameStatus();
+                toggleBoardClickable(true);
+                updateUndoButtonState();
+            }, 800);
+        }
+
+        // Save current game state for undo
+        function saveGameState() {
+            moveHistory.push({
+                board: [...gameBoard],
+                player: currentPlayer
+            });
+            
+            // Enable undo button if there are moves to undo
+            updateUndoButtonState();
+        }
+
+        // Undo last move (both human and computer)
+        function undoMove() {
+            if (moveHistory.length > 0) {
+                // Get the previous state
+                const previousState = moveHistory.pop();
+                
+                // Restore the game board
+                gameBoard = [...previousState.board];
+                currentPlayer = previousState.player;
+                
+                // Update the UI
+                updateBoardUI();
+                
+                // Update status
+                if (currentPlayer === humanPlayer) {
+                    updateStatusDisplay('your-turn', 'Your turn (X)');
+                } else {
+                    updateStatusDisplay('computer-turn', 'Computer\'s turn (O)');
+                }
+                
+                // If the game was over, reactivate it
+                gameActive = true;
+                
+                // Update undo button state
+                updateUndoButtonState();
+            }
+        }
+
+        // Update undo button state
+        function updateUndoButtonState() {
+            undoButton.disabled = moveHistory.length === 0 || !gameActive;
+        }
+
+        // Update the board UI based on the current game board
+        function updateBoardUI() {
+            cells.forEach((cell, index) => {
+                cell.textContent = gameBoard[index];
+                cell.className = 'cell';
+                
+                if (gameBoard[index] === humanPlayer) {
+                    cell.classList.add('x-marker');
+                } else if (gameBoard[index] === computerPlayer) {
+                    cell.classList.add('o-marker');
+                }
+            });
+        }
+
+        // Toggle board clickability
+        function toggleBoardClickable(clickable) {
+            const pointerEvents = clickable ? 'auto' : 'none';
+            document.getElementById('board').style.pointerEvents = pointerEvents;
+        }
+
+        // Update cell with player's move
+        function updateCell(cellIndex, player) {
+            gameBoard[cellIndex] = player;
+            cells[cellIndex].textContent = player;
+            
+            // Add class for styling
+            if (player === humanPlayer) {
+                cells[cellIndex].classList.add('x-marker');
+            } else {
+                cells[cellIndex].classList.add('o-marker');
+            }
+        }
+
+        // Check game status (win or draw)
+        function checkGameStatus() {
+            if (checkWin()) {
+                if (currentPlayer === humanPlayer) {
+                    updateStatusDisplay('win', 'You win! 🎉');
+                    stats.wins++;
+                    winsDisplay.textContent = stats.wins;
+                } else {
+                    updateStatusDisplay('lose', 'Computer wins! 😢');
+                    stats.losses++;
+                    lossesDisplay.textContent = stats.losses;
+                }
+                gameActive = false;
+                updateUndoButtonState();
+                return true;
+            }
+
+            if (checkDraw()) {
+                updateStatusDisplay('draw', 'Game ended in a draw! 🤝');
+                stats.draws++;
+                drawsDisplay.textContent = stats.draws;
+                gameActive = false;
+                updateUndoButtonState();
+                return true;
+            }
+
+            // Game continues
+            if (currentPlayer === humanPlayer) {
+                updateStatusDisplay('your-turn', 'Your turn (X)');
+            } else {
+                updateStatusDisplay('computer-turn', 'Computer\'s turn (O)');
+            }
+            return false;
+        }
+
+        // Computer's move based on difficulty
+        function computerMove() {
+            const difficulty = difficultySelector.value;
+            let cellIndex;
+
+            switch(difficulty) {
+                case 'easy':
+                    cellIndex = getRandomMove();
+                    break;
+                case 'medium':
+                    // 70% chance of making a smart move, 30% chance of random move
+                    if (Math.random() < 0.7) {
+                        cellIndex = getSmartMove();
+                    } else {
+                        cellIndex = getRandomMove();
+                    }
+                    break;
+                case 'hard':
+                    // 90% optimal, 10% random for some unpredictability
+                    if (Math.random() < 0.9) {
+                        cellIndex = getSmartMove();
+                    } else {
+                        cellIndex = getRandomMove();
+                    }
+                    break;
+                case 'impossible':
+                    cellIndex = getMinimaxMove();
+                    break;
+                default:
+                    cellIndex = getRandomMove();
+            }
+
+            updateCell(cellIndex, computerPlayer);
+            currentPlayer = humanPlayer;
+        }
+
+        // Get a random valid move
+        function getRandomMove() {
+            const emptyCells = gameBoard.reduce((acc, cell, index) => {
+                if (cell === '') acc.push(index);
+                return acc;
+            }, []);
+            
+            return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        }
+
+        // Get a smart move (win, block, or best available)
+        function getSmartMove() {
+            // Check if computer can win
+            for (let i = 0; i < gameBoard.length; i++) {
+                if (gameBoard[i] === '') {
+                    // Try move
+                    gameBoard[i] = computerPlayer;
+                    if (checkWinForPlayer(computerPlayer)) {
+                        gameBoard[i] = ''; // Reset for actual move
+                        return i; // Winning move
+                    }
+                    gameBoard[i] = ''; // Reset
+                }
+            }
+
+            // Check if need to block human
+            for (let i = 0; i < gameBoard.length; i++) {
+                if (gameBoard[i] === '') {
+                    // Try move
+                    gameBoard[i] = humanPlayer;
+                    if (checkWinForPlayer(humanPlayer)) {
+                        gameBoard[i] = ''; // Reset for actual move
+                        return i; // Blocking move
+                    }
+                    gameBoard[i] = ''; // Reset
+                }
+            }
+
+            // Take center if available
+            if (gameBoard[4] === '') {
+                return 4;
+            }
+
+            // Take corners if available
+            const corners = [0, 2, 6, 8];
+            const availableCorners = corners.filter(corner => gameBoard[corner] === '');
+            if (availableCorners.length > 0) {
+                return availableCorners[Math.floor(Math.random() * availableCorners.length)];
+            }
+
+            // Otherwise, take random available spot
+            return getRandomMove();
+        }
+
+        // Get the best move using minimax algorithm (impossible difficulty)
+        function getMinimaxMove() {
+            let bestScore = -Infinity;
+            let bestMove;
+            
+            for (let i = 0; i < gameBoard.length; i++) {
+                // Check if cell is empty
+                if (gameBoard[i] === '') {
+                    // Try move
+                    gameBoard[i] = computerPlayer;
+                    let score = minimax(gameBoard, 0, false);
+                    // Undo move
+                    gameBoard[i] = '';
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = i;
+                    }
+                }
+            }
+            
+            return bestMove;
+        }
+
+        // Minimax algorithm for unbeatable AI
+        function minimax(board, depth, isMaximizing) {
+            // Check terminal states
+            if (checkWinForPlayer(computerPlayer)) {
+                return 10 - depth; // Win (prefer quicker wins)
+            }
+            if (checkWinForPlayer(humanPlayer)) {
+                return depth - 10; // Loss (prefer later losses)
+            }
+            if (!board.includes('')) {
+                return 0; // Draw
+            }
+            
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < board.length; i++) {
+                    if (board[i] === '') {
+                        board[i] = computerPlayer;
+                        let score = minimax(board, depth + 1, false);
+                        board[i] = '';
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < board.length; i++) {
+                    if (board[i] === '') {
+                        board[i] = humanPlayer;
+                        let score = minimax(board, depth + 1, true);
+                        board[i] = '';
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        // Check for a win for specific player
+        function checkWinForPlayer(player) {
+            for (let i = 0; i < winningCombinations.length; i++) {
+                const [a, b, c] = winningCombinations[i];
+                if (gameBoard[a] === player && gameBoard[b] === player && gameBoard[c] === player) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Check for a win
+        function checkWin() {
+            for (let i = 0; i < winningCombinations.length; i++) {
+                const [a, b, c] = winningCombinations[i];
+                if (gameBoard[a] && gameBoard[a] === gameBoard[b] && gameBoard[a] === gameBoard[c]) {
+                    highlightWinningCells([a, b, c]);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Highlight winning cells
+        function highlightWinningCells(winningCells) {
+            winningCells.forEach(index => {
+                cells[index].classList.add('highlight');
+            });
+        }
+
+        // Check for a draw
+        function checkDraw() {
+            return !gameBoard.includes('');
+        }
+
+        // Reset the game
+        function resetGame() {
+            initGame();
+        }
+
+        // Load stats from local storage if available
+        function loadStats() {
+            const savedStats = localStorage.getItem('ticTacToeStats');
+            if (savedStats) {
+                stats = JSON.parse(savedStats);
+                winsDisplay.textContent = stats.wins;
+                drawsDisplay.textContent = stats.draws;
+                lossesDisplay.textContent = stats.losses;
+            }
+        }
+
+        // Save stats to local storage
+        function saveStats() {
+            localStorage.setItem('ticTacToeStats', JSON.stringify(stats));
+        }
+
+        // Event listener for saving stats before unloading the page
+        window.addEventListener('beforeunload', saveStats);
+
+        // Initialize the game and load stats
+        loadStats();
+        initGame();
+    </script>
+</body>
+</html>
